@@ -1,14 +1,12 @@
 import axiosInstance, { buildQueryString } from './api';
 import {
-  TASK_REQUEST,
-  TASK_SUCCESS,
-  TASK_FAILURE,
-  TASK_DETAIL,
-  TASK_DELETE
+  COMMENT_REQUEST,
+  COMMENT_SUCCESS,
+  COMMENT_FAILURE
 } from "../constans";
 
 export const isFetching = (payload) => ({
-  type: TASK_REQUEST,
+  type: COMMENT_REQUEST,
   payload: payload,
 });
 
@@ -17,113 +15,91 @@ export const onAction = (res, type) => ({
   payload: res,
 });
 
-export const saveTask = (id, payloads) => {
+export const saveComment = (id, payloads) => {
   if(id){
-    return updateTask(id, payloads)
+    return updateComment(id, payloads)
   } else {
-    return createTask(payloads)
+    return createComment(payloads)
   }
 }
 
-export const createTask = (payloads) => {
+export const createComment = (payloads) => {
   return (dispatch) => {
     dispatch(isFetching({ type: "fetch", status: true }));
     axiosInstance
-      .post(`/tasks`, payloads, {
+      .post(`/comments`, payloads, {
         headers: {
           "Content-Type": "application/json",
         },
       })
       .then((res) => {
-        dispatch(onAction(res.data, TASK_DETAIL));
+        dispatch(onAction(res.data, COMMENT_DETAIL));
         dispatch(isFetching({ type: "fetch", status: false }));
       })
       .catch((err) => {
-        dispatch(onAction(err.response.data || "Unknown error", TASK_FAILURE));
+        dispatch(onAction(err.response || "Unknown error", COMMENT_FAILURE));
         dispatch(isFetching({ type: "fetch", status: false }));
       });
   };
 };
 
-export const updateTask = (id, payloads) => {
+export const updateComment = (id, payloads) => {
   return (dispatch) => {
     dispatch(isFetching({ type: "fetch", status: true }));
     axiosInstance
-      .put(`/tasks/${id}`, payloads, {
+      .put(`/comments/${id}`, payloads, {
         headers: {
           "Content-Type": "application/json",
         },
       })
       .then((res) => {
-        dispatch(onAction(res.data, TASK_DETAIL));
+        dispatch(onAction(res.data, COMMENT_DETAIL));
         dispatch(isFetching({ type: "fetch", status: false }));
       })
       .catch((err) => {
-        dispatch(onAction(err.response.data || "Unknown error", TASK_FAILURE));
+        dispatch(onAction(err.response || "Unknown error", COMMENT_FAILURE));
         dispatch(isFetching({ type: "fetch", status: false }));
       });
   };
 };
 
-export const deleteTask = (id) => {
+export const deleteComment = (id) => {
   return (dispatch) => {
     dispatch(isFetching({ type: "fetch", status: true }));
     axiosInstance
-      .delete(`/tasks/${id}`, {
+      .delete(`/comments/${id}`, {
         headers: {
           "Content-Type": "application/json",
         },
       })
       .then((res) => {
-        dispatch(onAction(res.data, TASK_DELETE));
+        dispatch(onAction(res.data, COMMENT_DETAIL));
         dispatch(isFetching({ type: "fetch", status: false }));
       })
       .catch((err) => {
-        dispatch(onAction(err.response.data || "Unknown error", TASK_FAILURE));
+        dispatch(onAction(err.response || "Unknown error", COMMENT_FAILURE));
         dispatch(isFetching({ type: "fetch", status: false }));
       });
   };
 };
 
 
-export const getTaskList = (queryParams) => {
+export const getCommentList = (queryParams) => {
   return (dispatch) => {
     dispatch(isFetching({ type: "fetch", status: true }));
     axiosInstance
-      .get(`/tasks${buildQueryString(queryParams)}`, {
+      .get(`/comments${buildQueryString(queryParams)}`, {
         headers: {
           "Content-Type": "application/json",
         },
       })
       .then((res) => {
-        dispatch(onAction(res.data, TASK_SUCCESS));
+        dispatch(onAction(res.data, COMMENT_SUCCESS));
         dispatch(isFetching({ type: "fetch", status: false }));
       })
       .catch((err) => {
-        dispatch(onAction(err.response.data || "Unknown error", TASK_FAILURE));
+        dispatch(onAction(err.response || "Unknown error", COMMENT_FAILURE));
         dispatch(isFetching({ type: "fetch", status: false }));
       });
   };
 };
-
-export const getTaskDetail = (taskId, ...queryParams) => {
-  return (dispatch) => {
-    dispatch(isFetching({ type: "fetch", status: true }));
-    axiosInstance
-      .get(`/tasks/${taskId}${buildQueryString(queryParams)}`, 
-      {
-        headers: {
-          "Content-Type": "application/json",
-        },
-      })
-      .then((res) => {
-        dispatch(onAction(res.data, TASK_DETAIL));
-        dispatch(isFetching({ type: "fetch", status: false }));
-      })
-      .catch((err) => {
-        dispatch(onAction(err.response.data || "Unknown error", TASK_FAILURE));
-        dispatch(isFetching({ type: "fetch", status: false }));
-      });
-  };
-};
-

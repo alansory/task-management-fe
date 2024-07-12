@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from "react";
-import { AiOutlineGoogle } from "react-icons/ai";
 import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from 'react-redux';
-import { register } from "../../actions/authActions";
+import { register, loginWithGoogle } from "../../actions/authActions";
+import { GoogleLogin } from "@react-oauth/google";
 
 const Register = () => {
   const navigate = useNavigate();
@@ -55,6 +55,16 @@ const Register = () => {
     }
   }, [errorAuth]);
 
+  const onSuccess = (googleUser) => {
+    setRegisterAttempted(true);
+    dispatch(loginWithGoogle(googleUser.credential));
+  };
+
+  const onFailure = () => {
+    setError("Register Error");
+  };
+
+
   return (
     <section className="h-screen flex flex-col md:flex-row justify-center space-y-10 md:space-y-0 md:space-x-16 items-center my-2 mx-5 md:mx-0 md:my-0">
       <div className="md:w-1/3 max-w-sm">
@@ -64,17 +74,13 @@ const Register = () => {
         />
       </div>
       <div className="md:w-1/3 max-w-sm">
-        <div className="text-center md:text-left">
-          <label className="mr-1">Sign in with</label>
-          <button
-            type="button"
-            className="mx-1 h-9 w-9  rounded-full bg-blue-600 hover:bg-blue-700 text-white shadow-[0_4px_9px_-4px_#3b71ca]"
-          >
-            <AiOutlineGoogle
-              size={20}
-              className="flex justify-center items-center w-full"
-            />
-          </button>
+        <div className="flex justify-center items-center">
+          <GoogleLogin
+            useOneTap={true}
+            onSuccess={onSuccess}
+            onFailure={onFailure}
+            cookiePolicy={'single_host_origin'}
+          />
         </div>
         <div className="my-5 flex items-center before:mt-0.5 before:flex-1 before:border-t before:border-neutral-300 after:mt-0.5 after:flex-1 after:border-t after:border-neutral-300">
           <p className="mx-4 mb-0 text-center font-semibold text-slate-500">

@@ -1,22 +1,29 @@
 import React, { useState, useEffect } from 'react';
-import { getTaskDetail } from '../../actions/taskActions';
+import { useNavigate, useParams } from 'react-router-dom'; 
+import { 
+  saveTask, 
+  getTaskDetail 
+} from '../../actions/taskActions';
 import { getUserList } from '../../actions/userActions'
 import { useDispatch, useSelector } from 'react-redux';
-import { useParams } from 'react-router-dom';
 
 const TaskForm = ({ ...props }) => {
   const { id } = useParams();
   const dispatch = useDispatch();
+  const navigateTo = useNavigate(); 
   const detail = useSelector(state => state.task.detail);
   const users = useSelector(state => state.user.data);
+  const isFetching = useSelector(state => state.task.isFetching);
+  const [isSubmiting, setIsSubmiting] = useState(false);
 
   const [task, setTask] = useState({
     title: '',
     description: '',
     status: 'TO_DO',
+    assignee_id: null,
     assignee: '',
     assignees: {},
-    dueDate: ''
+    due_date: ''
   });
   const [assignees, setAssignees] = useState([]);
   const [showDropdown, setShowDropdown] = useState(false);
@@ -32,7 +39,7 @@ const TaskForm = ({ ...props }) => {
         status: 'TO_DO',
         assignee: '',
         assignees: {},
-        dueDate: ''
+        due_date: ''
       });
     }
   }, [dispatch, id]);
@@ -43,12 +50,19 @@ const TaskForm = ({ ...props }) => {
         title: detail.title || '',
         description: detail.description || '',
         status: detail.status || 'TO_DO',
-        assignee: detail.assignee ? detail.assignee.name : '',
+        assignee: detail.assignee  || task.assignee,
+        assignee_id: detail.assignee_id || null,
         assignees: detail.assignee || {},
-        dueDate: detail.dueDate ? detail.dueDate.split('T')[0] : ''
+        due_date: detail.due_date ? detail.due_date : ''
       });
+      setLastDetail({
+        ...detail
+      })
+    } else if(!id && detail && isSubmiting){
+      setIsSubmiting(false)
+      navigateTo('/tasks')
     }
-  }, [id, detail]);
+  }, [id, detail, isSubmiting]);
 
   useEffect(() => {
     const queryParams = {
@@ -62,8 +76,19 @@ const TaskForm = ({ ...props }) => {
   useEffect(() => {
     if (users) {
       setAssignees(users);
+      if(task.assignee_id){
+        const filtered = users.filter(assignee =>
+          assignee.id == task.assignee_id
+        );
+        if(filtered.length > 0 ){
+          setTask(prevState => ({
+            ...prevState,
+            assignee : filtered[0].email
+          }))
+        }
+      }
     }
-  }, [users]);
+  }, [users, task.assignee_id]);
 
   const handleChange = (e) => {
     e.preventDefault();
@@ -87,7 +112,6 @@ const TaskForm = ({ ...props }) => {
     e.preventDefault();
     const value = e.target.value;
     if (value.trim() === '') {
-      console.log('masuk sini')
       setTask(prevState => ({
         ...prevState,
         assignee: '',
@@ -107,8 +131,23 @@ const TaskForm = ({ ...props }) => {
     }
   };
 
-  const handleSubmit = (e) => {
+  const formatDateForInput = (dateString) => {
+    if (!dateString) return '';
+    const date = new Date(dateString);
+    return date.toISOString().split('T')[0];
+  };
+
+  const handleSubmit = async(e)  => {
     e.preventDefault();
+    const payloads = {
+      title: task.title,
+      description: task.description,
+      status: task.status,
+      assignee_id: task.assignees.id,
+      due_date: task.due_date
+    }
+    dispatch(saveTask(id, payloads))
+    setIsSubmiting(true)
   };
 
   return (
@@ -179,12 +218,12 @@ const TaskForm = ({ ...props }) => {
           )}
         </div>
         <div className="mb-4">
-          <label htmlFor="dueDate" className="block text-sm font-medium text-gray-700">Due Date</label>
+          <label htmlFor="due_date" className="block text-sm font-medium text-gray-700">Due Date</label>
           <input
             type="date"
-            id="dueDate"
-            name="dueDate"
-            value={task.dueDate}
+            id="due_date"
+            name="due_date"
+            value={formatDateForInput(task.due_date)}
             onChange={handleChange}
             className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
           />
@@ -192,9 +231,10 @@ const TaskForm = ({ ...props }) => {
         <div className="mt-6">
           <button
             type="submit"
+            disabled={isFetching} 
             className="inline-block bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 focus:outline-none"
           >
-            Save
+            {isFetching ? 'Saving...' : 'Save'}
           </button>
         </div>
       </form>

@@ -7,7 +7,7 @@ export default defineConfig({
     cors: false,
     proxy: {
       "/api": {
-        target: "http://localhost:3000",
+        target: "https://task-management-api-ten.vercel.app",
         changeOrigin: true,
         secure: false,
         rewrite: (path) => path.replace(/^\/api/, ""),

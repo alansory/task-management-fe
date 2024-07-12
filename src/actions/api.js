@@ -19,7 +19,7 @@ export const getToken = () => {
 };
 
 export const axiosInstance = axios.create({
-  baseURL: "/api",
+  baseURL: "https://task-management-api-ten.vercel.app",
   headers: {
     "Cache-Control": "no-cache",
     "Pragma": "no-cache",

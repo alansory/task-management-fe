@@ -1,4 +1,4 @@
-import axios from "axios";
+import axiosInstance from "./api";
 import {
   AUTH_REQUEST,
   AUTH_SUCCESS,
@@ -23,8 +23,8 @@ export const login = (email, password) => {
   };
   return (dispatch) => {
     dispatch(isFetching({ type: "fetch", status: true }));
-    axios
-      .post(`/api/auth/login`, bodyRequest, {
+    axiosInstance
+      .post(`/auth/login`, bodyRequest, {
         headers: {
           "Content-Type": "application/json",
         },
@@ -41,11 +41,36 @@ export const login = (email, password) => {
   };
 };
 
+export const loginWithGoogle = (token) => {
+  const bodyRequest = {
+    token,
+  };
+  return (dispatch) => {
+    dispatch(isFetching({ type: "fetch", status: true }));
+    axiosInstance
+      .post(`/auth/google`, bodyRequest, {
+        headers: {
+          "Content-Type": "application/json",
+        },
+      })
+      .then((res) => {
+        window.localStorage.setItem('user_traits', JSON.stringify(res.data, res.access_token));
+        dispatch(onAction(res.data, AUTH_SUCCESS));
+        dispatch(isFetching({ type: "fetch", status: false }));
+      })
+      .catch((err) => {
+        dispatch(onAction(err.response.data || "Unknown error", AUTH_FAILURE));
+        dispatch(isFetching({ type: "fetch", status: false }));
+      });
+  };
+};
+
+
 export const register = (bodyRequest) => {
   return (dispatch) => {
     dispatch(isFetching({ type: "fetch", status: true }));
-    axios
-      .post(`/api/auth/register`, bodyRequest, {
+    axiosInstance
+      .post(`/auth/register`, bodyRequest, {
         headers: {
           "Content-Type": "application/json",
         },

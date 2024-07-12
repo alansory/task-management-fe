@@ -1,24 +1,44 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { getCommentList, saveComment } from '../../actions/commentActions'
+import { useParams } from 'react-router-dom';
 
 const CommentForm = () => {
+  const { id } = useParams();
+  const dispatch = useDispatch();
   const [newComment, setNewComment] = useState('');
-  const [comments, setComments] = useState([
-    { user: 'Alice', text: 'This is a great start!' },
-    { user: 'Bob', text: 'Make sure to add unit tests.' },
-    { user: 'Charlie', text: 'Review the design with the team.' }
-  ]);
+  const comments = useSelector(state => state.comment.data) || [];
 
   const handleCommentChange = (e) => {
     setNewComment(e.target.value);
   };
 
-  const handleAddComment = (e) => {
+  const handleAddComment = async (e) => {
     e.preventDefault();
-    if (newComment.trim() !== '') {
-      setComments([...comments, { user: 'User', text: newComment }]);
-      setNewComment('');
+    const payloads = {
+      content: newComment,
+      task_id: Number(id),
     }
+    dispatch(saveComment(undefined, payloads))
+    const queryParams = {
+      task_id: Number(id),
+      page: 1,
+      per_page: 10
+    };
+    dispatch(getCommentList(queryParams));
+    setNewComment('')
   };
+
+  useEffect(() => {
+    const queryParams = {
+      task_id: Number(id),
+      page: 1,
+      per_page: 10
+    }
+    if(id){
+      dispatch(getCommentList(queryParams))
+    }
+  }, [dispatch, id]);
 
   return (
     <div className="bg-white mt-[6rem]">
@@ -45,8 +65,8 @@ const CommentForm = () => {
         <div className="space-y-2">
           {comments.map((comment, index) => (
             <div key={index} className="flex items-start space-x-2">
-              <span className="text-sm font-bold text-gray-700">{comment.user}:</span>
-              <span className="text-sm text-gray-700">{comment.text}</span>
+              <span className="text-sm font-bold text-gray-700">{comment.user.email}:</span>
+              <span className="text-sm text-gray-700">{comment.content}</span>
             </div>
           ))}
         </div>

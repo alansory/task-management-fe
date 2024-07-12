@@ -1,17 +1,22 @@
 import React, { useState, useEffect} from 'react';
 import { useNavigate } from 'react-router-dom'; 
-import { getTaskList } from '../../actions/taskActions';
+import { deleteTask, getTaskList } from '../../actions/taskActions';
 import { useDispatch, useSelector } from 'react-redux';
 import { Link } from 'react-router-dom';
-import { FaEye } from 'react-icons/fa';
+import { FaEye, FaTrash } from 'react-icons/fa';
+import DeleteModal from '../../components/Modal/DeleteModal';
 
 const TaskList = () => {
   const dispatch = useDispatch();
   const navigateTo = useNavigate(); 
+  const [taskId, setTaskId] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
   const [sortStatus, setSortStatus] = useState('');
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [perPage] = useState(20); 
+  const isFetching = useSelector(state => state.task.isFetching) || false;
+  const isDeleted = useSelector(state => state.task.isDeleted) || false;
   const tasks = useSelector(state => state.task.data) || [];
   const paging = useSelector(state => state.task.paging) || null;
 
@@ -25,6 +30,15 @@ const TaskList = () => {
     setCurrentPage(1);
   };
 
+  const handleDelete = (id) => {
+    dispatch(deleteTask(id));
+  };
+
+  const handleDeleteModal = (id) => {
+    setShowConfirmModal(true)
+    setTaskId(id)
+  };
+
   useEffect(() => {
     const queryParams = {
       title: searchTerm,
@@ -33,7 +47,10 @@ const TaskList = () => {
       per_page: perPage
     }
     dispatch(getTaskList(queryParams));
-  }, [dispatch, searchTerm, sortStatus, currentPage, perPage]);
+    if(isDeleted){
+      setShowConfirmModal(false)
+    }
+  }, [dispatch, searchTerm, sortStatus, currentPage, perPage, isDeleted]);
 
   const total = paging ? paging.total : 0;
   const totalPages = Math.ceil(total / perPage);
@@ -45,6 +62,11 @@ const TaskList = () => {
 
   return (
     <div className="h-full flex flex-column ml-5 mr-5">
+      <DeleteModal
+        show={showConfirmModal}
+        onClose={() => setShowConfirmModal(false)}
+        onConfirm={() => handleDelete(taskId)}
+      />
       <h2 className="text-xl font-bold mt-4">Task List</h2>
       <div className="flex items-center justify-between mb-3">
         <input
@@ -73,53 +95,64 @@ const TaskList = () => {
           </select>
         </div>
       </div>
-      <table className="w-80% divide-y divide-gray-200 shadow-none">
-        <thead className="bg-gray-50">
-          <tr>
-            <th scope="col" className="border px-6 py-2 text-left text-xs font-medium tracking-wider w-[1rem]">
-              ID
-            </th>
-            <th scope="col" className="border px-6 py-2 text-left text-xs font-medium tracking-wider">
-              Title
-            </th>
-            <th scope="col" className="border px-6 py-2 text-left text-xs font-medium tracking-wider">
-              Description
-            </th>
-            <th scope="col" className="border px-6 py-2 text-left text-xs font-medium tracking-wider w-[1rem]">
-              Due Date
-            </th>
-            <th scope="col" className="border px-6 py-2 text-left text-xs font-medium tracking-wider w-[1rem]">
-              Status
-            </th>
-            <th scope="col" className="border px-6 py-2 text-left text-xs font-medium tracking-wider w-[1rem]">
-              Action
-            </th>
-          </tr>
-        </thead>
-        <tbody className="bg-white divide-y divide-gray-200">
-          {tasks.map((task) => (
-            <tr key={task.id}>
-              <td className="border px-6 py-2 whitespace-nowrap text-xs text-gray-900 w-[1rem]">{task.id}</td>
-              <td className="border px-6 py-2 whitespace-nowrap text-xs text-gray-900">{task.title}</td>
-              <td className="border px-6 py-2 whitespace-nowrap text-xs text-gray-900">{task.description}</td>
-              <td className="border px-6 py-2 whitespace-nowrap text-xs text-gray-900 w-[1rem]">
-                {task.due_date ? new Date(task.due_date).toLocaleDateString('id-ID', {
-                  year: 'numeric',
-                  month: 'long',
-                  day: 'numeric',
-                }): '-'}
-              </td>
-              <td className="border px-6 py-2 whitespace-nowrap text-xs text-gray-900  w-[1rem]">{task.status.replace(/_/g, ' ')}</td>
-              <td className="border px-6 py-2 whitespace-nowrap text-xs text-gray-900 w-[1rem]">
-                <Link to={`/tasks/${task.id}`} className="flex items-center text-blue-500 no-underline hover:underline">
-                  <FaEye className="mr-1" />
-                  View
-                </Link>
-              </td>
+      {isFetching && !taskId ? (
+        <div className="text-center my-4">Loading...</div>
+      ) : (
+        <table className="w-80% divide-y divide-gray-200 shadow-none">
+          <thead className="bg-gray-50">
+            <tr>
+              <th scope="col" className="border px-6 py-2 text-left text-xs font-medium tracking-wider w-[1rem]">
+                ID
+              </th>
+              <th scope="col" className="border px-6 py-2 text-left text-xs font-medium tracking-wider">
+                Title
+              </th>
+              <th scope="col" className="border px-6 py-2 text-left text-xs font-medium tracking-wider">
+                Description
+              </th>
+              <th scope="col" className="border px-6 py-2 text-left text-xs font-medium tracking-wider w-[1rem]">
+                Due Date
+              </th>
+              <th scope="col" className="border px-6 py-2 text-left text-xs font-medium tracking-wider w-[1rem]">
+                Status
+              </th>
+              <th scope="col" className="border text-center px-6 py-2 text-xs font-medium tracking-wider w-[10rem]">
+                Action
+              </th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody className="bg-white divide-y divide-gray-200">
+            {tasks.map((task) => (
+              <tr key={task.id}>
+                <td className="border px-6 py-2 whitespace-nowrap text-xs text-gray-900 w-[1rem]">{task.id}</td>
+                <td className="border px-6 py-2 whitespace-nowrap text-xs text-gray-900">{task.title}</td>
+                <td className="border px-6 py-2 whitespace-nowrap text-xs text-gray-900">{task.description}</td>
+                <td className="border px-6 py-2 whitespace-nowrap text-xs text-gray-900 w-[1rem]">
+                  {task.due_date ? new Date(task.due_date).toLocaleDateString('id-ID', {
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric',
+                  }): '-'}
+                </td>
+                <td className="border px-6 py-2 whitespace-nowrap text-xs text-gray-900  w-[1rem]">{task.status.replace(/_/g, ' ')}</td>
+                <td className="flex items-center space-x-2 border px-6 py-2 whitespace-nowrap text-xs text-gray-900 w-[10rem]">
+                  <Link to={`/tasks/${task.id}`} className="flex items-center text-blue-500 no-underline hover:underline mr-2">
+                    <FaEye className="mr-1" />
+                    View
+                  </Link>
+                  <button
+                    onClick={() => handleDeleteModal(task.id)}
+                    className="flex items-center text-red-500 no-underline hover:underline"
+                  >
+                    <FaTrash className="mr-1" />
+                    Delete
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      )}
       <div className="mt-4 flex justify-end">
         <nav className="relative z-0 inline-flex shadow-sm">
           <button
