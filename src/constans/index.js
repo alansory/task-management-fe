@@ -15,6 +15,7 @@ export const USER_FAILURE = "USER_FAILURE";
 export const COMMENT_REQUEST = "COMMENT_REQUEST";
 export const COMMENT_SUCCESS = "COMMENT_SUCCESS";
 export const COMMENT_FAILURE = "COMMENT_FAILURE";
+export const COMMENT_DETAIL = "COMMENT_DETAIL";
 
 
 export const LOGOUT = "LOGOUT"

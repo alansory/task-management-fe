@@ -8,6 +8,7 @@ import {
 
 const initialState = {
   isFetching: false,
+  isSubmiting: false,
   data: [],
   isDeleted: false,
   paging: null,
@@ -18,6 +19,9 @@ const initialState = {
 const onFetching = (lastState,payload) => {
   if(payload.type==='fetch')
     return { ...lastState, isFetching:payload.status}
+  if(payload.type==='submit')
+    return { ...lastState, isSubmiting:payload.status}
+  
   return { ...lastState, isFetching:false, isDeleted:false}
 }
 

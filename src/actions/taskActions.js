@@ -27,7 +27,7 @@ export const saveTask = (id, payloads) => {
 
 export const createTask = (payloads) => {
   return (dispatch) => {
-    dispatch(isFetching({ type: "fetch", status: true }));
+    dispatch(isFetching({ type: "submit", status: true }));
     axiosInstance
       .post(`/tasks`, payloads, {
         headers: {
@@ -36,18 +36,18 @@ export const createTask = (payloads) => {
       })
       .then((res) => {
         dispatch(onAction(res.data, TASK_DETAIL));
-        dispatch(isFetching({ type: "fetch", status: false }));
+        dispatch(isFetching({ type: "submit", status: false }));
       })
       .catch((err) => {
         dispatch(onAction(err.response.data || "Unknown error", TASK_FAILURE));
-        dispatch(isFetching({ type: "fetch", status: false }));
+        dispatch(isFetching({ type: "submit", status: false }));
       });
   };
 };
 
 export const updateTask = (id, payloads) => {
   return (dispatch) => {
-    dispatch(isFetching({ type: "fetch", status: true }));
+    dispatch(isFetching({ type: "submit", status: true }));
     axiosInstance
       .put(`/tasks/${id}`, payloads, {
         headers: {
@@ -56,18 +56,18 @@ export const updateTask = (id, payloads) => {
       })
       .then((res) => {
         dispatch(onAction(res.data, TASK_DETAIL));
-        dispatch(isFetching({ type: "fetch", status: false }));
+        dispatch(isFetching({ type: "submit", status: false }));
       })
       .catch((err) => {
         dispatch(onAction(err.response.data || "Unknown error", TASK_FAILURE));
-        dispatch(isFetching({ type: "fetch", status: false }));
+        dispatch(isFetching({ type: "submit", status: false }));
       });
   };
 };
 
 export const deleteTask = (id) => {
   return (dispatch) => {
-    dispatch(isFetching({ type: "fetch", status: true }));
+    dispatch(isFetching({ type: "submit", status: true }));
     axiosInstance
       .delete(`/tasks/${id}`, {
         headers: {
@@ -76,11 +76,11 @@ export const deleteTask = (id) => {
       })
       .then((res) => {
         dispatch(onAction(res.data, TASK_DELETE));
-        dispatch(isFetching({ type: "fetch", status: false }));
+        dispatch(isFetching({ type: "submit", status: false }));
       })
       .catch((err) => {
         dispatch(onAction(err.response.data || "Unknown error", TASK_FAILURE));
-        dispatch(isFetching({ type: "fetch", status: false }));
+        dispatch(isFetching({ type: "submit", status: false }));
       });
   };
 };

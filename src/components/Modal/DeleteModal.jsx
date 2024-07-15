@@ -1,6 +1,6 @@
 import React from 'react';
 
-const DeleteModal = ({ show, onClose, onConfirm }) => {
+const DeleteModal = ({ show, onClose, onConfirm, isSubmiting }) => {
   if (!show) return null;
 
   return (
@@ -52,9 +52,9 @@ const DeleteModal = ({ show, onClose, onConfirm }) => {
           <button
             onClick={onConfirm}
             type="button"
-            className="mt-3 w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-red-600 text-base font-medium text-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm"
+            className="mt-3 w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-red-600 text-base font-medium text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm"
           >
-            Delete
+            {isSubmiting ? 'Deleting...' : 'Delete'}
           </button>
           <button
             onClick={onClose}

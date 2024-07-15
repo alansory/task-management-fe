@@ -2,6 +2,7 @@ import {
   COMMENT_REQUEST,
   COMMENT_SUCCESS,
   COMMENT_FAILURE,
+  COMMENT_DETAIL
 } from "../constans"
 
 const initialState = {
@@ -25,6 +26,12 @@ const commentReducer = (state = initialState, action) => {
       const { data, paging }=action.payload;
       return {
         ...state, data: [...data], paging,  isFetching:false, error:null
+      }
+    }
+    case COMMENT_DETAIL:{
+      const { data }=action.payload;
+      return {
+        ...state, detail: data,  isFetching:false, error:null
       }
     }
     case COMMENT_FAILURE: {

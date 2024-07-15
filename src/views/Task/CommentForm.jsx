@@ -7,7 +7,9 @@ const CommentForm = () => {
   const { id } = useParams();
   const dispatch = useDispatch();
   const [newComment, setNewComment] = useState('');
+  const isFetching = useSelector(state => state.comment.isFetching) || false;
   const comments = useSelector(state => state.comment.data) || [];
+  const detail = useSelector(state => state.comment.detail) || null;
 
   const handleCommentChange = (e) => {
     setNewComment(e.target.value);
@@ -20,12 +22,6 @@ const CommentForm = () => {
       task_id: Number(id),
     }
     dispatch(saveComment(undefined, payloads))
-    const queryParams = {
-      task_id: Number(id),
-      page: 1,
-      per_page: 10
-    };
-    dispatch(getCommentList(queryParams));
     setNewComment('')
   };
 
@@ -35,10 +31,10 @@ const CommentForm = () => {
       page: 1,
       per_page: 10
     }
-    if(id){
+    if(id || detail){
       dispatch(getCommentList(queryParams))
     }
-  }, [dispatch, id]);
+  }, [dispatch, id, detail]);
 
   return (
     <div className="bg-white mt-[6rem]">
@@ -61,16 +57,20 @@ const CommentForm = () => {
           </button>
         )}
       </form>
-      <div className="mt-4">
-        <div className="space-y-2">
-          {comments.map((comment, index) => (
-            <div key={index} className="flex items-start space-x-2">
-              <span className="text-sm font-bold text-gray-700">{comment.user.email}:</span>
-              <span className="text-sm text-gray-700">{comment.content}</span>
-            </div>
-          ))}
+      {isFetching ? (
+        <div className="text-left my-4">Loading...</div>
+      ) : (
+        <div className="mt-4">
+          <div className="space-y-2">
+            {comments.map((comment, index) => (
+              <div key={index+comment.id} className="flex items-start space-x-2">
+                <span className="text-sm font-bold text-gray-700">{comment.user.email}:</span>
+                <span className="text-sm text-gray-700">{comment.content}</span>
+              </div>
+            ))}
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 };

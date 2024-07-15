@@ -28,10 +28,17 @@ const Register = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!email.trim() || !password.trim() || !name.trim()) {
       setError("Please fill in all fields.");
       return;
     }
+
+    if (!emailRegex.test(email)) {
+      setError("Please enter a valid email address.");
+      return;
+    }
+    
     setRegisterAttempted(true);
     const bodyRequest = {
       name,

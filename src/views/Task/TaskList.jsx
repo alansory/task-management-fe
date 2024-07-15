@@ -15,6 +15,7 @@ const TaskList = () => {
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [perPage] = useState(20); 
+  const isSubmiting = useSelector(state => state.task.isSubmiting) || false;
   const isFetching = useSelector(state => state.task.isFetching) || false;
   const isDeleted = useSelector(state => state.task.isDeleted) || false;
   const tasks = useSelector(state => state.task.data) || [];
@@ -47,10 +48,20 @@ const TaskList = () => {
       per_page: perPage
     }
     dispatch(getTaskList(queryParams));
-    if(isDeleted){
+  }, [dispatch, searchTerm, sortStatus, currentPage, perPage]);
+
+  useEffect(() => {
+    if(isDeleted && !isSubmiting){
       setShowConfirmModal(false)
+      const queryParams = {
+        title: searchTerm,
+        status: sortStatus,
+        page: currentPage,
+        per_page: perPage
+      }
+      dispatch(getTaskList(queryParams));
     }
-  }, [dispatch, searchTerm, sortStatus, currentPage, perPage, isDeleted]);
+  }, [isDeleted, isSubmiting])
 
   const total = paging ? paging.total : 0;
   const totalPages = Math.ceil(total / perPage);
@@ -63,6 +74,7 @@ const TaskList = () => {
   return (
     <div className="h-full flex flex-column ml-5 mr-5">
       <DeleteModal
+        isSubmiting={isSubmiting}
         show={showConfirmModal}
         onClose={() => setShowConfirmModal(false)}
         onConfirm={() => handleDelete(taskId)}
@@ -95,7 +107,7 @@ const TaskList = () => {
           </select>
         </div>
       </div>
-      {isFetching && !taskId ? (
+      {isFetching ? (
         <div className="text-center my-4">Loading...</div>
       ) : (
         <table className="w-80% divide-y divide-gray-200 shadow-none">

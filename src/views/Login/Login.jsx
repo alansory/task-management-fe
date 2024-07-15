@@ -3,6 +3,7 @@ import { login, loginWithGoogle } from "../../actions/authActions";
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from "react-router-dom";
 import { GoogleLogin } from "@react-oauth/google";
+import { FaEye, FaEyeSlash } from 'react-icons/fa';
 
 const Login = () => {
   const navigate = useNavigate();
@@ -11,12 +12,17 @@ const Login = () => {
     email: "",
     password: "",
   });
-  const [rememberMe, setRememberMe] = useState(false);
   const [error, setError] = useState(null);
   const [loginAttempted, setLoginAttempted] = useState(false);
   const { email, password } = formData;
-  const dataAuth = useSelector(state => state.auth.data);
+  const accessToken = useSelector(state => state.auth.accessToken);
   const errorAuth = useSelector(state => state.auth.error);
+  const [isPasswordVisible, setIsPasswordVisible] = useState(false);
+
+
+  const togglePasswordVisibility = () => {
+    setIsPasswordVisible(!isPasswordVisible);
+  };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -26,27 +32,30 @@ const Login = () => {
     }));
   };
 
-  const handleRememberMeChange = (e) => {
-    setRememberMe(e.target.checked);
-  };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
     if (!email.trim() || !password.trim()) {
       setError("Please fill in all fields.");
       return;
     }
+
+    if (!emailRegex.test(email)) {
+      setError("Please enter a valid email address.");
+      return;
+    }
+
     setLoginAttempted(true);
     await dispatch(login(email, password));
   };
 
   useEffect(() => {
-    if (dataAuth && loginAttempted) {
+    if (accessToken && loginAttempted) {
       navigate('/dashboard');
       setLoginAttempted(false);
     }
-  }, [dataAuth, navigate, loginAttempted]);
+  }, [accessToken, loginAttempted]);
 
   useEffect(() => {
     if (errorAuth) {
@@ -97,24 +106,24 @@ const Login = () => {
             value={email}
             onChange={handleChange}
           />
-          <input
-            name="password"
-            className="text-sm w-full px-4 py-2 border border-solid border-gray-300 rounded mt-4"
-            type="password"
-            placeholder="Password"
-            value={password}
-            onChange={handleChange}
-          />
+          <div className="relative mt-4">
+            <input
+              name="password"
+              className="text-sm w-full px-4 py-2 border border-solid border-gray-300 rounded"
+              type={isPasswordVisible ? 'text' : 'password'}
+              placeholder="Password"
+              value={password}
+              onChange={handleChange}
+            />
+            <button
+              type="button"
+              className="absolute right-3 top-1/2 transform -translate-y-1/2 h-full"
+              onClick={togglePasswordVisibility}
+            >
+              {isPasswordVisible ? <FaEyeSlash /> : <FaEye />}
+            </button>
+          </div>
           <div className="mt-4 flex justify-between font-semibold text-sm">
-            <label className="flex text-slate-500 hover:text-slate-600 cursor-pointer">
-              <input
-                className="mr-1"
-                type="checkbox"
-                checked={rememberMe}
-                onChange={handleRememberMeChange}
-              />
-              <span>Remember Me</span>
-            </label>
             <a
               className="text-blue-600 hover:text-blue-700 hover:underline hover:underline-offset-4"
               href="#"

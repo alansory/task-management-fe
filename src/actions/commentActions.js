@@ -2,7 +2,8 @@ import axiosInstance, { buildQueryString } from './api';
 import {
   COMMENT_REQUEST,
   COMMENT_SUCCESS,
-  COMMENT_FAILURE
+  COMMENT_FAILURE,
+  COMMENT_DETAIL
 } from "../constans";
 
 export const isFetching = (payload) => ({
